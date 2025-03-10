@@ -4,42 +4,25 @@ function MyLibrary:MakeWindow(options)
     local self = {}
     self.Name = options.Name or "My Custom GUI"
 
-    -- Create GUI
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "MyGui"
     ScreenGui.Parent = game:GetService("CoreGui")
 
-    -- Main Frame (Mobile-Friendly Size)
+    -- **Smaller GUI (250x350)**
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 300, 0, 400)
-    MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
+    MainFrame.Size = UDim2.new(0, 250, 0, 350)
+    MainFrame.Position = UDim2.new(0.5, -125, 0.5, -175)
     MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     MainFrame.BorderSizePixel = 0
-    MainFrame.ClipsDescendants = true
     MainFrame.Parent = ScreenGui
 
-    -- Rounded UI
     local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 12) -- Fully Rounded
+    UICorner.CornerRadius = UDim.new(0, 12)
     UICorner.Parent = MainFrame
 
-    -- Title Bar (Draggable)
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1, 0, 0, 40)
-    Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    Title.Text = self.Name
-    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Title.Font = Enum.Font.SourceSansBold
-    Title.TextSize = 20
-    Title.Parent = MainFrame
-
-    local TitleCorner = Instance.new("UICorner")
-    TitleCorner.CornerRadius = UDim.new(0, 12)
-    TitleCorner.Parent = Title
-
-    -- Dragging (Works on Mobile & PC)
+    -- **Draggable GUI (Mobile & PC)**
     local dragging, dragInput, dragStart, startPos
-    Title.InputBegan:Connect(function(input)
+    MainFrame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = input.Position
@@ -53,7 +36,7 @@ function MyLibrary:MakeWindow(options)
         end
     end)
 
-    Title.InputChanged:Connect(function(input)
+    MainFrame.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
             dragInput = input
         end
@@ -66,55 +49,87 @@ function MyLibrary:MakeWindow(options)
         end
     end)
 
-    -- Scroll Frame (Rounded)
+    -- **Scroll Frame**
     local ScrollFrame = Instance.new("ScrollingFrame")
     ScrollFrame.Size = UDim2.new(1, 0, 1, -40)
     ScrollFrame.Position = UDim2.new(0, 0, 0, 40)
-    ScrollFrame.BackgroundTransparency = 1
     ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-    ScrollFrame.ScrollBarThickness = 5
+    ScrollFrame.ScrollBarThickness = 4
     ScrollFrame.Parent = MainFrame
 
-    local ScrollCorner = Instance.new("UICorner")
-    ScrollCorner.CornerRadius = UDim.new(0, 12)
-    ScrollCorner.Parent = ScrollFrame
-
+    -- **Tabs**
     function self:MakeTab(tabOptions)
         local tab = {}
-        tab.Name = tabOptions.Name or "Tab"
 
-        local TabButton = Instance.new("TextButton")
-        TabButton.Size = UDim2.new(1, 0, 0, 35)
-        TabButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-        TabButton.Text = tab.Name
-        TabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        TabButton.Font = Enum.Font.SourceSansBold
-        TabButton.Parent = ScrollFrame
+        function tab:AddButton(options)
+            local Button = Instance.new("TextButton")
+            Button.Size = UDim2.new(1, -10, 0, 30)
+            Button.Position = UDim2.new(0, 5, 0, ScrollFrame.CanvasSize.Y.Offset)
+            Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            Button.Text = options.Name
+            Button.Parent = ScrollFrame
 
-        local TabCorner = Instance.new("UICorner")
-        TabCorner.CornerRadius = UDim.new(0, 12)
-        TabCorner.Parent = TabButton
+            Button.MouseButton1Click:Connect(options.Callback)
 
-        function tab:AddButton(buttonOptions)
-            local btn = Instance.new("TextButton")
-            btn.Size = UDim2.new(1, -10, 0, 35)
-            btn.Position = UDim2.new(0, 5, 0, ScrollFrame.CanvasSize.Y.Offset)
-            btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-            btn.Text = buttonOptions.Name
-            btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            btn.Font = Enum.Font.SourceSansBold
-            btn.Parent = ScrollFrame
+            ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ScrollFrame.CanvasSize.Y.Offset + 35)
+        end
 
-            local BtnCorner = Instance.new("UICorner")
-            BtnCorner.CornerRadius = UDim.new(0, 12)
-            BtnCorner.Parent = btn
+        function tab:AddToggle(options)
+            local Toggle = Instance.new("TextButton")
+            Toggle.Size = UDim2.new(1, -10, 0, 30)
+            Toggle.Position = UDim2.new(0, 5, 0, ScrollFrame.CanvasSize.Y.Offset)
+            Toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            Toggle.Text = options.Name
+            Toggle.Parent = ScrollFrame
 
-            btn.MouseButton1Click:Connect(function()
-                buttonOptions.Callback()
+            local toggled = false
+            Toggle.MouseButton1Click:Connect(function()
+                toggled = not toggled
+                Toggle.Text = options.Name .. (toggled and " [ON]" or " [OFF]")
+                options.Callback(toggled)
             end)
 
-            -- Update Scroll Frame Size
-            ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ScrollFrame.CanvasSize.Y.Offset + 40)
+            ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ScrollFrame.CanvasSize.Y.Offset + 35)
+        end
+
+        function tab:AddSlider(options)
+            local SliderFrame = Instance.new("Frame")
+            SliderFrame.Size = UDim2.new(1, -10, 0, 30)
+            SliderFrame.Position = UDim2.new(0, 5, 0, ScrollFrame.CanvasSize.Y.Offset)
+            SliderFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            SliderFrame.Parent = ScrollFrame
+
+            local Slider = Instance.new("TextButton")
+            Slider.Size = UDim2.new(0, 100, 1, 0)
+            Slider.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+            Slider.Text = options.Name .. ": " .. options.Default
+            Slider.Parent = SliderFrame
+
+            Slider.MouseButton1Click:Connect(function()
+                local value = math.random(options.Min, options.Max)
+                Slider.Text = options.Name .. ": " .. value
+                options.Callback(value)
+            end)
+
+            ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ScrollFrame.CanvasSize.Y.Offset + 35)
+        end
+
+        function tab:AddDropdown(options)
+            local Dropdown = Instance.new("TextButton")
+            Dropdown.Size = UDim2.new(1, -10, 0, 30)
+            Dropdown.Position = UDim2.new(0, 5, 0, ScrollFrame.CanvasSize.Y.Offset)
+            Dropdown.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            Dropdown.Text = options.Name
+            Dropdown.Parent = ScrollFrame
+
+            local selected = options.Options[1]
+            Dropdown.MouseButton1Click:Connect(function()
+                selected = options.Options[math.random(1, #options.Options)]
+                Dropdown.Text = options.Name .. ": " .. selected
+                options.Callback(selected)
+            end)
+
+            ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ScrollFrame.CanvasSize.Y.Offset + 35)
         end
 
         return tab
@@ -124,7 +139,7 @@ function MyLibrary:MakeWindow(options)
 end
 
 function MyLibrary:Init()
-    print("Library Initialized!")
+    print("Library Loaded!")
 end
 
 return MyLibrary
