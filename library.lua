@@ -9,18 +9,18 @@ function MyLibrary:MakeWindow(options)
     ScreenGui.Name = "MyGui"
     ScreenGui.Parent = game:GetService("CoreGui")
 
-    -- Main Frame
+    -- Main Frame (Mobile-Friendly Size)
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 350, 0, 450)
-    MainFrame.Position = UDim2.new(0.5, -175, 0.5, -225)
+    MainFrame.Size = UDim2.new(0, 300, 0, 400)
+    MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
     MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     MainFrame.BorderSizePixel = 0
     MainFrame.ClipsDescendants = true
     MainFrame.Parent = ScreenGui
 
-    -- UI Corner (Rounded Edges)
+    -- Rounded UI
     local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 10)
+    UICorner.CornerRadius = UDim.new(0, 12) -- Fully Rounded
     UICorner.Parent = MainFrame
 
     -- Title Bar (Draggable)
@@ -33,7 +33,11 @@ function MyLibrary:MakeWindow(options)
     Title.TextSize = 20
     Title.Parent = MainFrame
 
-    -- Dragging Function
+    local TitleCorner = Instance.new("UICorner")
+    TitleCorner.CornerRadius = UDim.new(0, 12)
+    TitleCorner.Parent = Title
+
+    -- Dragging (Works on Mobile & PC)
     local dragging, dragInput, dragStart, startPos
     Title.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -62,7 +66,7 @@ function MyLibrary:MakeWindow(options)
         end
     end)
 
-    -- Scroll Frame for Content
+    -- Scroll Frame (Rounded)
     local ScrollFrame = Instance.new("ScrollingFrame")
     ScrollFrame.Size = UDim2.new(1, 0, 1, -40)
     ScrollFrame.Position = UDim2.new(0, 0, 0, 40)
@@ -70,6 +74,10 @@ function MyLibrary:MakeWindow(options)
     ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
     ScrollFrame.ScrollBarThickness = 5
     ScrollFrame.Parent = MainFrame
+
+    local ScrollCorner = Instance.new("UICorner")
+    ScrollCorner.CornerRadius = UDim.new(0, 12)
+    ScrollCorner.Parent = ScrollFrame
 
     function self:MakeTab(tabOptions)
         local tab = {}
@@ -83,6 +91,10 @@ function MyLibrary:MakeWindow(options)
         TabButton.Font = Enum.Font.SourceSansBold
         TabButton.Parent = ScrollFrame
 
+        local TabCorner = Instance.new("UICorner")
+        TabCorner.CornerRadius = UDim.new(0, 12)
+        TabCorner.Parent = TabButton
+
         function tab:AddButton(buttonOptions)
             local btn = Instance.new("TextButton")
             btn.Size = UDim2.new(1, -10, 0, 35)
@@ -93,29 +105,12 @@ function MyLibrary:MakeWindow(options)
             btn.Font = Enum.Font.SourceSansBold
             btn.Parent = ScrollFrame
 
+            local BtnCorner = Instance.new("UICorner")
+            BtnCorner.CornerRadius = UDim.new(0, 12)
+            BtnCorner.Parent = btn
+
             btn.MouseButton1Click:Connect(function()
                 buttonOptions.Callback()
-            end)
-
-            -- Update Scroll Frame Size
-            ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ScrollFrame.CanvasSize.Y.Offset + 40)
-        end
-
-        function tab:AddToggle(toggleOptions)
-            local Toggle = Instance.new("TextButton")
-            Toggle.Size = UDim2.new(1, -10, 0, 35)
-            Toggle.Position = UDim2.new(0, 5, 0, ScrollFrame.CanvasSize.Y.Offset)
-            Toggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-            Toggle.Text = toggleOptions.Name .. " [OFF]"
-            Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-            Toggle.Font = Enum.Font.SourceSansBold
-            Toggle.Parent = ScrollFrame
-
-            local state = false
-            Toggle.MouseButton1Click:Connect(function()
-                state = not state
-                Toggle.Text = toggleOptions.Name .. (state and " [ON]" or " [OFF]")
-                toggleOptions.Callback(state)
             end)
 
             -- Update Scroll Frame Size
